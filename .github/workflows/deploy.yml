@@ -1,0 +1,55 @@
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches:
+      - main  # Trigger the workflow on pushes to the main branch
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest  # Use the latest Ubuntu runner
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4  # Fetch the repository code
+
+      - name: Install .NET
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: '9.0'  # Install .NET 9.0
+
+      - name: Restore dependencies
+        run: dotnet restore  # Restore NuGet packages
+
+      - name: Build the project
+        run: dotnet build --no-restore --configuration Release  # Build in Release mode
+
+      - name: Run tests
+        run: dotnet test --no-build --verbosity normal  # Execute tests
+
+  deploy:
+    needs: build-and-test  # Run deployment only if build-and-test succeeds
+    runs-on: ubuntu-latest  # Use the latest Ubuntu runner
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4  # Fetch the repository code
+
+      - name: Install .NET
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: '9.0'  # Install .NET 9.0
+
+      - name: Build the web app
+        run: dotnet publish -c Release -o site  # Publish the app to the "site" folder
+
+      - name: Set up GitHub Pages deployment
+        run: |
+          touch site/.nojekyll  # Disable Jekyll processing for GitHub Pages
+          echo "webapp.${{ github.repository_owner }}.github.io" > site/CNAME  # Set custom domain (if needed)
+
+      - name: Deploy to GitHub Pages
+        uses: JamesIves/github-pages-deploy-action@v4
+        with:
+          branch: gh-pages  # Deploy to the gh-pages branch
+          folder: site  # Upload the "site" folder
