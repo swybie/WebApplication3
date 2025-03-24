@@ -25,7 +25,7 @@ jobs:
         run: dotnet build --no-restore --configuration Release  # Build in Release mode
 
       - name: Run Tests
-        run: dotnet test TestProject1/bin/Debug/net9.0/TestProject1.dll  # Execute tests
+        run: dotnet test --logger "console;verbosity=detailed" # Execute tests
 
   deploy:
     needs: build-and-test  # Run deployment only if build-and-test succeeds
